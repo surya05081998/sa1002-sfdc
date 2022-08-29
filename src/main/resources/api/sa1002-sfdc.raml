@@ -1,0 +1,33 @@
+#%RAML 1.0
+title: sa1002-sfdc
+description: This is a system api to get the resources from SFDC system
+version: v1
+protocols:
+  - HTTP
+  - HTTPS
+mediaType: 
+- application/json
+baseUri: api/sys/v1/
+
+types:
+  getaccountsResponse: !include DataTypes/getaccountsResponseDataType.raml
+
+traits:
+  clientcredentials: !include traits/trait.raml
+
+/accounts:
+  is:
+    - clientcredentials
+  get:
+    queryParameters:
+      AccountNumber:
+        type: string
+        maxLength: 40
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+            type: getaccountsResponse
+            example: !include examples/getaccountsResponse.json
+              

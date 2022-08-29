@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="getaccountsSubFlow" doc:id="1c80d3ed-6819-468b-b22c-276470750274" >
+		<logger level="INFO" doc:name="Info:getaccounts subflow start Logger" doc:id="c9484e15-bead-443d-b9e2-138637923fa8" message="getaccounts subflow started"/>
+		<set-variable value="#[attributes.queryParams.AccountNumber]" doc:name="Set Variable for AccountID" doc:id="177bf4d9-9ef6-4321-a4bb-44174e37415f" variableName="ID"/>
+		<salesforce:query doc:name="Query" doc:id="3c262085-dc08-4e73-8055-de0822bcbdb6" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[select Name__c,AccountNumber__c,OwnerId__c,Site__c,YearStarted__c,Tier__c from accounts__c where AccountNumber__c=':AccountNumber']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[{
+	AccountNumber: vars.ID
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="dd6e0c71-575d-4052-9b6d-4ec2feedac13" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "Name": payload[0].Name__c,
+  "AccountNumber": payload[0].AccountNumber__c,
+  "OwnerId": payload[0].OwnerId__c,
+  "Site": payload[0].Site__c,
+  "YearStarted": payload[0].YearStarted__c,
+  "Tier": payload[0].Tier__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Debug: payload after SFDC system " doc:id="e59bf225-5dcd-45ad-9ee4-d55c954e5c21" message="payload after SFDC system is #[payload]" category="com.mycompany.get.accounts"/>
+		<logger level="INFO" doc:name="Info: getaccounts subflow end Logger" doc:id="12a7b095-f3b1-4841-a777-3664f07abb45" message="getaccounts flow ended"/>
+	</sub-flow>
+</mule>
